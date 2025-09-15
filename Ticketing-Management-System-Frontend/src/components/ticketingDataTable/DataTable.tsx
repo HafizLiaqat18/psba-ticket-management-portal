@@ -39,9 +39,21 @@ export function DataTable<TData, TValue>({
   rowsPerPage,
   setRowsPerPage,
 }: DataTableProps<TData, TValue>) {
+  const srNoColumn: ColumnDef<TData> = {
+    id: "srNo",
+    header: () => <span>Sr No</span>,
+    cell: ({ row, table }) => {
+      const { pageIndex, pageSize } = table.getState().pagination;
+      const serial = pageIndex * pageSize + row.index + 1;
+      return <span>{serial}</span>;
+    },
+    size: 60,
+  };
+
+  const allColumns = [srNoColumn, ...columns] as ColumnDef<TData, any>[];
   const table = useReactTable({
     data,
-    columns,
+    columns: allColumns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     initialState: {
@@ -87,10 +99,7 @@ export function DataTable<TData, TValue>({
               ))
             ) : (
               <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center"
-                >
+                <TableCell colSpan={table.getAllLeafColumns().length} className="h-24 text-center">
                   No tickets found
                 </TableCell>
               </TableRow>

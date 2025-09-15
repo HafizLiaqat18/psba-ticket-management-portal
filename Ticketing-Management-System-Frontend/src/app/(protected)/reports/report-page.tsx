@@ -118,7 +118,8 @@ export default function SecurityReportsPage({
       <Table className="bg-white rounded-md p-2">
         <TableHeader className="px-2">
           <TableRow>
-            <TableHead>Market Name</TableHead>
+            <TableHead>Sr No</TableHead>
+            <TableHead>Sahulat Bazaar Name</TableHead>
             <TableHead>Created At</TableHead>
             <TableHead>Submitted At</TableHead>
             <TableHead>Submitted</TableHead>
@@ -128,13 +129,14 @@ export default function SecurityReportsPage({
         <TableBody>
           {markets.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={5} className="text-center py-8 text-gray-500">
+              <TableCell colSpan={6} className="text-center py-8 text-gray-500">
                 No reports found
               </TableCell>
             </TableRow>
           ) : (
-            markets.map((market) => (
+            markets.map((market, idx) => (
               <TableRow key={market._id}>
+                <TableCell>{startIndex + idx + 1}</TableCell>
                 <TableCell className="font-medium">
                   {market.marketId.name}
                 </TableCell>
@@ -276,7 +278,7 @@ export default function SecurityReportsPage({
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-[40%] grid-cols-3">
             <TabsTrigger value="all">
-              All Markets ({allMarkets.length})
+              All Sahulat Bazaars ({allMarkets.length})
             </TabsTrigger>
             <TabsTrigger value="submitted">
               Submitted ({submittedMarkets.length})

@@ -49,13 +49,13 @@ export const TicketProvider = ({ children }: { children: ReactNode }) => {
     const fetchDepartments = async () => {
       try {
         const res = await api.get("/department/get-all-departments");
-        const marketsRes = await api.get("/market/get-all-markets");
+  const marketsRes = await api.get("/market/get-all-markets");
         setDepartments(res?.data?.data?.departments);
         setMarkets(marketsRes?.data?.data?.markets);
       } catch (error) {
         if (axios.isAxiosError(error)) {
           toast.error(
-            error?.response?.data?.message || "Failed to fetch departments/markets"
+            error?.response?.data?.message || "Failed to fetch departments/Sahulat Bazaars"
           );
         }
       }
@@ -92,19 +92,19 @@ export const TicketProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  // ✅ Create Market
+  // ✅ Create Sahulat Bazaar
   const createMarket = async (name: string) => {
     if (!name) {
-      toast.error("Market name is required");
+      toast.error("Sahulat Bazaar name is required");
       return;
     }
     try {
       const { data } = await api.post("market/create-market", { name });
       setMarkets((prev) => [...prev, data.data]);
-      toast.success("Market created successfully!");
+      toast.success("Sahulat Bazaar created successfully!");
     } catch (error: any) {
       const message =
-        error.response?.data?.message || "Failed to create market";
+        error.response?.data?.message || "Failed to create Sahulat Bazaar";
       toast.error(message);
     }
   };

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -37,6 +37,29 @@ export default function CloseTicketsPage() {
 
 
   const router = useRouter();
+  // Reusable fetcher used by both auto and manual flows
+  const fetchTickets = async (
+    params: { startDate: string; endDate: string; ticketType: "created" | "assigned" }
+  ) => {
+    setIsLoading(true);
+    try {
+      const res = await api.post("/ticket/get-tickets", params);
+      setTickets(res?.data?.data?.tickets ?? []);
+    } catch (error) {
+      showError(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Raw fetch helper that returns list without touching component state
+  const fetchTicketsList = async (
+    params: { startDate: string; endDate: string; ticketType: "created" | "assigned" }
+  ): Promise<Ticket[]> => {
+    const res = await api.post("/ticket/get-tickets", params);
+    return res?.data?.data?.tickets ?? [];
+  };
+
   const getTickets = async () => {
     if (!selectDate || !fromDate) {
       toast.error("Please select both Select Date and From Date");
@@ -46,21 +69,7 @@ export default function CloseTicketsPage() {
       toast.error("Select Date cannot be later than From Date");
       return;
     }
-
-    setIsLoading(true);
-    try {
-      const res = await api.post("/ticket/get-tickets", {
-        startDate: selectDate,
-        endDate: fromDate,
-        ticketType,
-      });
-
-      setTickets(res?.data?.data?.tickets ?? []);
-    } catch (error) {
-      showError(error);
-    } finally {
-      setIsLoading(false);
-    }
+    await fetchTickets({ startDate: selectDate, endDate: fromDate, ticketType });
   };
 
   
@@ -111,13 +120,39 @@ export default function CloseTicketsPage() {
     }
   }
 
+  // Ensure auto-fetch runs only once (handles React Strict Mode double-invoke in dev)
+  const didAutoFetchRef = useRef(false);
   useEffect(() => {
-    const today = new Date();
-    const weekAgo = new Date(today);
-    weekAgo.setDate(today.getDate() - 7);
+    if (didAutoFetchRef.current) return;
+    didAutoFetchRef.current = true;
 
-    setSelectDate(weekAgo.toISOString().split("T")[0]);
-    setFromDate(today.toISOString().split("T")[0]);
+    const today = new Date();
+    const todayStr = today.toISOString().split("T")[0];
+
+    // Initialize inputs to today's range
+    setSelectDate(todayStr);
+    setFromDate(todayStr);
+
+    // Auto-load all closed tickets for today: created + assigned
+    const loadAllForToday = async () => {
+      setIsLoading(true);
+      try {
+        const [created, assigned] = await Promise.all([
+          fetchTicketsList({ startDate: todayStr, endDate: todayStr, ticketType: "created" }),
+          fetchTicketsList({ startDate: todayStr, endDate: todayStr, ticketType: "assigned" }),
+        ]);
+        const merged = [...created, ...assigned];
+        const uniqueById = Array.from(new Map(merged.map((t) => [t._id, t])).values());
+        setTickets(uniqueById);
+      } catch (error) {
+        showError(error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadAllForToday();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleViewTicket = (ticket: Ticket) => {

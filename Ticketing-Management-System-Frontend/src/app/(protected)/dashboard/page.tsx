@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import { useAuth } from "@/context/auth-context";
 import api from "@/lib/api";
-import { useRouter } from "next/navigation";
 import DashboardTabs from "@/components/DashboardTabs";
 import { DataTable } from "@/components/ticketingDataTable/DataTable";
 import { getTicketColumns } from "@/components/ticketingDataTable/columns";
@@ -13,6 +13,7 @@ import showError from "@/components/send-error";
 export default function TicketManagementPage() {
   const { user, isLoading } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState("all");
   const [rowsPerPage, setRowsPerPage] = useState("10");
   const [tickets, setTickets] = useState<Ticket[]>([]);
@@ -35,13 +36,24 @@ export default function TicketManagementPage() {
     }
   }, [user, isLoading]);
 
+  // Sync activeTab with status query param
+  useEffect(() => {
+    const status = (searchParams.get("status") || "all").toLowerCase();
+    const allowed = ["all", "open", "in-progress", "resolved"];
+    if (allowed.includes(status)) {
+      setActiveTab(status);
+    } else {
+      setActiveTab("all");
+    }
+  }, [searchParams]);
+
   const filteredTickets = useMemo(() => {
-    if (activeTab === "all") return tickets;
+  if (activeTab === "all") return tickets;
 
     return tickets.filter((ticket) => {
       const status = ticket.status?.toLowerCase();
       if (activeTab === "resolved") {
-        return status === "resolved" || status === "closed";
+        return status === "resolved"; // keep closed separate
       }
       if (activeTab === "in-progress") {
         return status === "in-progress";
@@ -51,12 +63,12 @@ export default function TicketManagementPage() {
   }, [tickets, activeTab]);
 
   const getTabCount = (status: string) => {
-    if (status === "all") return tickets.length;
+  if (status === "all") return tickets.length;
 
     return tickets.filter((ticket) => {
       const s = ticket.status?.toLowerCase();
-      if (status === "resolved") return s === "resolved" || s === "closed";
-      if (status === "in-progress") return s === "in-progress"; // <-- fix here
+      if (status === "resolved") return s === "resolved";
+      if (status === "in-progress") return s === "in-progress";
       return s === status;
     }).length;
   };

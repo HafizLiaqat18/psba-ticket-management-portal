@@ -28,17 +28,17 @@ export  function CreateMarketDialog({ createMarketOpen, setCreateMarketOpen }: C
     const [marketName, setMarketName] = useState("")
     const createMarket = async () => {
         if (!marketName) {
-            toast.error("Market name is required");
+            toast.error("Sahulat Bazaar name is required");
             return;
         }
         try {
             await api.post("market/create-market", { name:marketName });
-            toast.success("Market created successfully!");
+            toast.success("Sahulat Bazaar created successfully!");
         setMarketName("")
             
         } catch (error: any) {
             const message =
-                error.response?.data?.message || "Failed to create market";
+                error.response?.data?.message || "Failed to create Sahulat Bazaar";
             toast.error(message);
         }
     };
@@ -52,20 +52,20 @@ export  function CreateMarketDialog({ createMarketOpen, setCreateMarketOpen }: C
             <DialogContent>
                 <DialogHeader className="pb-4 border-b border-gray-200 dark:border-gray-800">
                     <DialogTitle className="text-2xl font-md flex items-center gap-3 text-gray-900 dark:text-gray-50">
-                        <UserPlusIcon className="h-7 w-7 text-primary" /> Create Market
+                        <UserPlusIcon className="h-7 w-7 text-primary" /> Create Sahulat Bazaar
                     </DialogTitle>
                     <DialogDescription className="text-sm text-gray-600 dark:text-gray-400 mt-2">
-                        Fill in the details below to create a new market .
+                        Fill in the details below to create a new Sahulat Bazaar.
                     </DialogDescription>
                 </DialogHeader>
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
-                        <Label htmlFor="name">Market Name</Label>
+                        <Label htmlFor="name">Sahulat Bazaar Name</Label>
                         <Input
                             id="marketName"
                             value={marketName}
                             onChange={(e) => setMarketName(e.target.value)}
-                            placeholder="Enter market name"
+                            placeholder="Enter Sahulat Bazaar name"
                             className="mt-2"
                             required
                         />
@@ -76,7 +76,7 @@ export  function CreateMarketDialog({ createMarketOpen, setCreateMarketOpen }: C
                             type="submit"
                             className="w-full bg-green-500 sm:w-auto px-6 py-3 text-lg font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
                         >
-                            Create Market
+                            Create Sahulat Bazaar
                         </Button>
                     </DialogFooter>
                 </form>

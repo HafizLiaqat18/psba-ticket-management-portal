@@ -130,7 +130,7 @@ export function CreateUserDialog({
     assignedToType === "Department"
       ? "Department"
       : assignedToType === "Market"
-      ? "Market"
+      ? "Sahulat Bazaar"
       : "Select Type First";
 
   const filteredAssignedToList = assignedToList.filter((item) => {
@@ -268,7 +268,7 @@ export function CreateUserDialog({
                       </SelectTrigger>
                       <SelectContent className="rounded-md border border-gray-200 dark:border-gray-800 bg-white  shadow-lg">
                         <SelectItem value="Department">Department</SelectItem>
-                        <SelectItem value="Market">Market</SelectItem>
+                        <SelectItem value="Market">Sahulat Bazaar</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>

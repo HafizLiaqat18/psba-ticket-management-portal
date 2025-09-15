@@ -108,10 +108,10 @@ export function ReportViewDialog({
 
         <div className="flex-1 overflow-y-auto p-6">
           <div className="space-y-4">
-            {/* Market Name - Disabled */}
+            {/* Sahulat Bazaar Name - Disabled */}
             <div className="grid gap-2">
               <Label className="text-sm font-medium text-gray-700">
-                Market Name
+                Sahulat Bazaar Name
               </Label>
               <Input
                 value={market.marketId.name}

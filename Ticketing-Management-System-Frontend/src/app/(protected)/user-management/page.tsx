@@ -143,8 +143,7 @@ export default function UserManagementSystem() {
             User Management System
           </h1>
           <p className="text-slate-600 text-sm mt-1">
-            Manage departments, Sahulat Bazaar, and user accounts across your
-            organization
+            Manage departments, Sahulat Bazaars, and user accounts across your organization
           </p>
         </div>
         <div>
@@ -164,7 +163,7 @@ export default function UserManagementSystem() {
             size={"sm"}
           >
             <span className="flex items-center mr-2 justify-center">
-              <User2Icon className="h-4 w-4 mr-2" /> Create Sahulat Baazar
+              <User2Icon className="h-4 w-4 mr-2" /> Create Sahulat Bazaar
             </span>
           </Button>
 
@@ -185,7 +184,7 @@ export default function UserManagementSystem() {
           <input
             type="text"
             className="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-            placeholder="Search by department or market..."
+            placeholder="Search by department or Sahulat Bazaar..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />

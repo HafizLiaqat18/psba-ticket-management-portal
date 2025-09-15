@@ -26,14 +26,35 @@ import {
 import Link from "next/link";
 import { useAuth } from "@/context/auth-context";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 
 // Navigation items with department restrictions
 const navItems = [
   {
-    title: "Assigned Tickets",
+    title: "All Tickets",
     icon: BarChart3,
     url: "/dashboard",
+    superAdminOnly: false,
+    allowedDepartments: ["all"],
+  },
+  {
+    title: "Open Tickets",
+    icon: BarChart3,
+    url: "/dashboard?status=open",
+    superAdminOnly: false,
+    allowedDepartments: ["all"],
+  },
+  {
+    title: "In Progress Tickets",
+    icon: LucideGitGraph,
+    url: "/dashboard?status=in-progress",
+    superAdminOnly: false,
+    allowedDepartments: ["all"],
+  },
+  {
+    title: "Resolved Tickets",
+    icon: ChartLineIcon,
+    url: "/dashboard?status=resolved",
     superAdminOnly: false,
     allowedDepartments: ["all"],
   },
@@ -86,6 +107,7 @@ const navItems = [
 export default function AppSidebar() {
   const { isAuthenticated, user } = useAuth();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
 
   if (!isAuthenticated) {
     return <></>;
@@ -159,7 +181,15 @@ export default function AppSidebar() {
                   <SidebarMenuItem key={item.title} className="hover:bg-green-100">
                     <SidebarMenuButton
                       asChild
-                      isActive={pathname.includes(item.url)}
+                      isActive={(() => {
+                        const [path, query] = item.url.split("?");
+                        if (!pathname.includes(path)) return false;
+                        if (!query) return true;
+                        const urlParams = new URLSearchParams(query);
+                        const key = Array.from(urlParams.keys())[0];
+                        const val = urlParams.get(key || "");
+                        return searchParams.get(key || "") === val;
+                      })()}
                       className="hover:bg-green-100"
                     >
                       <Link href={item.url}>

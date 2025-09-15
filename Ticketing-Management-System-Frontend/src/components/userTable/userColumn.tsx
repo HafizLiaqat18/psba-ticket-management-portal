@@ -56,7 +56,7 @@ export const userColumns = (
             ? "Super Admin"
             : user.role.includes("department")
             ? "Department Admin"
-            : "Baazar Admin"}
+            : "Sahulat Bazaar Admin"}
         </span>
       );
     },
@@ -76,7 +76,7 @@ export const userColumns = (
             {user.assignedTo?.name ?? "-"}
           </div>
           <div className="text-sm text-gray-500 capitalize">
-            {user.assignedToType?.toLowerCase()==="market" ? "Baazar" : "Department"}
+            {user.assignedToType?.toLowerCase()==="market" ? "Sahulat Bazaar" : "Department"}
           </div>
         </div>
       );
