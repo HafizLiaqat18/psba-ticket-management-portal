@@ -12,13 +12,16 @@ const signToken = (id) =>
 const login = catchAsync(async (req, res, next) => {
   const { email, password } = req.body;
   //1) check if email and password exist
-
+// console.log(email, password);
   if (!email || !password) {
     return res.status(400).json({
       status: "fail",
       message: "Please provide email and password!",
     });
   }
+
+  console.log(await User.findOne({ email }));
+
   //2) check if user exists && password is correct
   const user = await User.findOne({ email })
     .select("+password")

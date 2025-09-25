@@ -39,6 +39,10 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use(morgan("dev")); 
 
+app.get("/", (req, res) => {
+  res.send("Ticketing Management System Backend is running");
+});
+
 app.use("/api/v1/users", UserRouter);
 app.use("/api/v1/market", marketRouter);
 app.use("/api/v1/department", departmentRouter);

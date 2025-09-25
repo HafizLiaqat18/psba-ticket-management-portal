@@ -102,7 +102,7 @@ export function ReportViewDialog({
         <DialogHeader className="p-6 pb-4 border-b border-gray-200 flex-shrink-0">
           <DialogTitle className="text-2xl font-bold flex items-center gap-3 text-gray-900">
             <Eye className="h-6 w-6 text-primary" />
-            {market.marketId.name} - Security Report
+            {(market.marketId?.name ?? "Unknown")} - Security Report
           </DialogTitle>
         </DialogHeader>
 
@@ -114,7 +114,7 @@ export function ReportViewDialog({
                 Sahulat Bazaar Name
               </Label>
               <Input
-                value={market.marketId.name}
+                value={market.marketId?.name ?? ""}
                 disabled
                 className="bg-gray-100"
               />

@@ -78,19 +78,38 @@ export default function SecurityReportsPage({
 
   const allMarkets = reportData?.marketsReport || [];
   const submittedMarkets = allMarkets.filter((market) => market.isSubmitted);
-  const notSubmittedMarkets = allMarkets.filter(
-    (market) => !market.isSubmitted
-  );
+  const notSubmittedMarkets = allMarkets.filter((market) => !market.isSubmitted);
+
+  const getTime = (d?: string | Date) => (d ? new Date(d).getTime() : Number.POSITIVE_INFINITY);
+  const getTimeOrZero = (d?: string | Date) => (d ? new Date(d).getTime() : 0);
+
+  // Sorting helpers
+  const sortSubmittedAsc = (list: MarketReport[]) =>
+    [...list].sort((a, b) => getTime(a.updatedAt) - getTime(b.updatedAt));
+
+  const sortNotSubmittedAscByCreated = (list: MarketReport[]) =>
+    [...list].sort((a, b) => getTimeOrZero(a.createdAt) - getTimeOrZero(b.createdAt));
+
+  const sortAllPreferred = (list: MarketReport[]) =>
+    [...list].sort((a, b) => {
+      const aSubmitted = !!a.isSubmitted;
+      const bSubmitted = !!b.isSubmitted;
+      if (aSubmitted && bSubmitted) return getTime(a.updatedAt) - getTime(b.updatedAt);
+      if (aSubmitted && !bSubmitted) return -1; // submitted first
+      if (!aSubmitted && bSubmitted) return 1;
+      // both not submitted: fall back to createdAt ascending
+      return getTimeOrZero(a.createdAt) - getTimeOrZero(b.createdAt);
+    });
 
   // Get current tab data
   const getCurrentTabData = () => {
     switch (activeTab) {
       case "submitted":
-        return submittedMarkets;
+        return sortSubmittedAsc(submittedMarkets);
       case "not-submitted":
-        return notSubmittedMarkets;
+        return sortNotSubmittedAscByCreated(notSubmittedMarkets);
       default:
-        return allMarkets;
+        return sortAllPreferred(allMarkets);
     }
   };
 
@@ -138,7 +157,7 @@ export default function SecurityReportsPage({
               <TableRow key={market._id}>
                 <TableCell>{startIndex + idx + 1}</TableCell>
                 <TableCell className="font-medium">
-                  {market.marketId.name}
+                  {market.marketId?.name ?? "Unknown"}
                 </TableCell>
                 <TableCell>{formatDate(market.createdAt)}</TableCell>
                 <TableCell>
@@ -243,7 +262,7 @@ export default function SecurityReportsPage({
     <div className="p-6 space-y-6 px-10 bg-gray-50 min-h-screen">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold">Weekly Security Reports</h1>
+          <h1 className="text-3xl font-bold">Security & Surveillance Reports</h1>
         </div>
         <div className="flex gap-2">
           <ReportStatusTimeline report={reportData} />

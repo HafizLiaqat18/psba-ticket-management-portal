@@ -101,6 +101,8 @@ const scheduleWeeklyReport = () => {
 const updateSecurityReportById = catchAsync(async (req, res, next) => {
   const { reportId } = req.params;
   const updateData = req.body;
+  console.log("Report")
+  console.log(updateData)
   updateData.isSubmitted = true;
   updateData.updatedAt = Date.now();
 

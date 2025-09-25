@@ -7,8 +7,8 @@ import {
   ChartAreaIcon,
   Users,
   FolderClosed,
-  LucideGitGraph,
   ChartLineIcon,
+  ChevronDown,
 } from "lucide-react";
 
 import {
@@ -27,37 +27,10 @@ import Link from "next/link";
 import { useAuth } from "@/context/auth-context";
 import Image from "next/image";
 import { usePathname, useSearchParams } from "next/navigation";
+import { useState } from "react";
 
-// Navigation items with department restrictions
+// Navigation items with department restrictions (excluding Tickets filters; rendered as dropdown)
 const navItems = [
-  {
-    title: "All Tickets",
-    icon: BarChart3,
-    url: "/dashboard",
-    superAdminOnly: false,
-    allowedDepartments: ["all"],
-  },
-  {
-    title: "Open Tickets",
-    icon: BarChart3,
-    url: "/dashboard?status=open",
-    superAdminOnly: false,
-    allowedDepartments: ["all"],
-  },
-  {
-    title: "In Progress Tickets",
-    icon: LucideGitGraph,
-    url: "/dashboard?status=in-progress",
-    superAdminOnly: false,
-    allowedDepartments: ["all"],
-  },
-  {
-    title: "Resolved Tickets",
-    icon: ChartLineIcon,
-    url: "/dashboard?status=resolved",
-    superAdminOnly: false,
-    allowedDepartments: ["all"],
-  },
   {
     title: "My Tickets",
     icon: Ticket,
@@ -108,6 +81,9 @@ export default function AppSidebar() {
   const { isAuthenticated, user } = useAuth();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const statusParam = (searchParams.get("status") || "all").toLowerCase();
+  const [ticketsOpen, setTicketsOpen] = useState(pathname.startsWith("/dashboard"));
+  const isOnDashboard = pathname.startsWith("/dashboard");
 
   if (!isAuthenticated) {
     return <></>;
@@ -167,15 +143,71 @@ export default function AppSidebar() {
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel className="mt-4 font-bold text-md">
-            Navigation
+            {/* Navigation */}
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu className="mt-5">
+              {/* Tickets dropdown */}
+              <SidebarMenuItem className="hover:bg-green-50">
+                <SidebarMenuButton
+                  isActive={isOnDashboard}
+                  className="hover:bg-green-100 flex items-center justify-between"
+                  onClick={() => setTicketsOpen((v) => !v)}
+                >
+                  <div className="flex items-center gap-2">
+                    <BarChart3 />
+                    <span className="text-base">Tickets</span>
+                  </div>
+                  <ChevronDown className={`${ticketsOpen ? "rotate-180" : ""} transition-transform`} />
+                </SidebarMenuButton>
+                {ticketsOpen && (
+                  <div className="ml-6 mt-1 space-y-1">
+                    <SidebarMenuButton
+                      asChild
+                      isActive={isOnDashboard && statusParam === "all"}
+                      className="hover:bg-green-100"
+                    >
+                      <Link href="/dashboard">
+                        <span className="text-base">All Tickets</span>
+                      </Link>
+                    </SidebarMenuButton>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={isOnDashboard && statusParam === "open"}
+                      className="hover:bg-green-100"
+                    >
+                      <Link href="/dashboard?status=open">
+                        <span className="text-base">Open Tickets</span>
+                      </Link>
+                    </SidebarMenuButton>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={isOnDashboard && statusParam === "in-progress"}
+                      className="hover:bg-green-100"
+                    >
+                      <Link href="/dashboard?status=in-progress">
+                        <span className="text-base">In Progress Tickets</span>
+                      </Link>
+                    </SidebarMenuButton>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={isOnDashboard && statusParam === "resolved"}
+                      className="hover:bg-green-100"
+                    >
+                      <Link href="/dashboard?status=resolved">
+                        <span className="text-base">Resolved Tickets</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </div>
+                )}
+              </SidebarMenuItem>
+
               {navItems.map((item) => {
                 // Check if user can access this route
                 if (!canAccessRoute(item)) {
                   return null;
                 }
+
 
                 return (
                   <SidebarMenuItem key={item.title} className="hover:bg-green-100">
@@ -184,7 +216,13 @@ export default function AppSidebar() {
                       isActive={(() => {
                         const [path, query] = item.url.split("?");
                         if (!pathname.includes(path)) return false;
-                        if (!query) return true;
+                        if (!query) {
+                          // Special-case dashboard root (All Tickets shouldn't be highlighted when a filter is active)
+                          if (path === "/dashboard") {
+                            return statusParam === "all";
+                          }
+                          return true;
+                        }
                         const urlParams = new URLSearchParams(query);
                         const key = Array.from(urlParams.keys())[0];
                         const val = urlParams.get(key || "");
@@ -205,6 +243,12 @@ export default function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
       <SidebarRail />
+      
+      {/* Security Report Dialog */}
+      {/* <SecurityReportDialog 
+        open={securityDialogOpen} 
+        onOpenChange={setSecurityDialogOpen} 
+      /> */}
     </Sidebar>
   );
 }

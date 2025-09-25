@@ -31,8 +31,26 @@ interface SecurityReportData {
   biometricStatus: boolean;
 }
 
-export function SecurityReportDialog() {
-  const [open, setOpen] = useState(false);
+interface SecurityReportDialogProps {
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  backgroundColor?: string;
+  textColor?: string;
+  fontSize?: string;
+  fontWeight?: string;
+}
+
+export function SecurityReportDialog({ 
+  open: externalOpen, 
+  onOpenChange,
+  backgroundColor = "bg-green-600",
+  textColor = "text-white",
+  fontSize = "text-lg",
+  fontWeight = "font-semibold"
+}: SecurityReportDialogProps = {}) {
+  const [internalOpen, setInternalOpen] = useState(false);
+  const open = externalOpen !== undefined ? externalOpen : internalOpen;
+  const setOpen = onOpenChange || setInternalOpen;
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
 
@@ -81,15 +99,15 @@ export function SecurityReportDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="px-6 py-3 text-lg bg-green-600 hover:bg-green-500 font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200">
-          <Shield className="mr-2 h-5 w-5" /> Security Report
+        <Button className={`px-6 py-3 ${fontSize} ${backgroundColor} hover:bg-green-500 ${fontWeight} ${textColor} rounded-lg shadow-md hover:shadow-lg transition-all duration-200`}>
+          <Shield className="mr-2 h-5 w-5" /> Security & Surveillance Report
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Security Report</DialogTitle>
+          <DialogTitle>Security & Surveillance Report</DialogTitle>
           <DialogDescription>
-            Submit your weekly security equipment status report.
+            Submit your weekly Security & Surveillance status report.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">

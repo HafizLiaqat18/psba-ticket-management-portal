@@ -32,6 +32,7 @@ export default function UserManagementSystem() {
   >("");
   const [assignedTo, setAssignedTo] = useState<string>("");
 
+
   // which flow is active
   const [openDialog, setOpenDialog] = useState<"create" | "edit" | null>(null);
   const [editUser, setEditUser] = useState<User | null>(null);
@@ -63,7 +64,8 @@ export default function UserManagementSystem() {
 
         const deptsRes = await api.get("/department/get-all-departments");
         setDepartments(deptsRes.data.data?.departments);
-
+        console.log("Department")
+        console.log(deptsRes.data.data?.departments);
         const marketsRes = await api.get("/market/get-all-markets");
         setMarkets(marketsRes.data.data?.markets);
       } catch (error) {

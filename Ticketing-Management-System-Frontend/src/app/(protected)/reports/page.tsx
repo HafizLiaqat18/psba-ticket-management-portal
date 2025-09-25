@@ -22,6 +22,7 @@ export default function Page() {
     try {
       setLoading(true);
       const { data } = await api("/report/get-weekly-report");
+      console.log("Weekly Report Data:", data);
       setReportData(data.data.report);
     } catch (error) {
       console.error("Error fetching weekly report:", error);

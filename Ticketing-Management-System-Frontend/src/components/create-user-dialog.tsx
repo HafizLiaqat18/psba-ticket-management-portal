@@ -133,12 +133,7 @@ export function CreateUserDialog({
       ? "Sahulat Bazaar"
       : "Select Type First";
 
-  const filteredAssignedToList = assignedToList.filter((item) => {
-    return !users?.some(
-      (u) =>
-        u.assignedToType === assignedToType && u.assignedTo?._id === item._id
-    );
-  });
+  // Show full list; do not hide already-assigned entities
 
   return (
     <Dialog open={createUserDialog} onOpenChange={setIsCreateUserDialog}>
@@ -282,7 +277,7 @@ export function CreateUserDialog({
                     </Label>
                     <SearchableSelect
                       className="bg-white"
-                      items={filteredAssignedToList}
+                      items={assignedToList}
                       value={assignedTo}
                       onValueChange={setAssignedTo}
                       placeholder={`Select a ${assignedToType || "type"}...`}

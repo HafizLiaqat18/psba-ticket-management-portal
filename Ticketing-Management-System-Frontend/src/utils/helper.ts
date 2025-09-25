@@ -44,30 +44,177 @@ function getCurrentTicket(): Ticket | null {
 const generateExcelReport = (reportData: WeeklyReport) => {
   if (!reportData) return;
 
-  const excelData = reportData.marketsReport.map((report) => ({
-    "Sahulat Bazaar Name": report.marketId.name,
-    "Created At": formatDateTime(report.createdAt),
-    Submitted: report.isSubmitted ? "Yes" : "No",
-    "Submitted At": report.submittedAt
-      ? formatDateTime(report.submittedAt)
-      : "N/A",
-    CCTV: report.totalCCTV || 0,
-    "Faulty CCTV": report.faultyCCTV || 0,
-    "Walkthrough Gates": report.walkthroughGates || 0,
-    "Faulty Walkthrough Gates": report.faultyWalkthroughGates || 0,
-    "Metal Detectors": report.metalDetectors || 0,
-    "Faulty Metal Detectors": report.faultyMetalDetectors || 0,
-    "Biometric Status": report.biometricStatus ? "Yes" : "No",
-    Comments: report.comments || "",
-  }));
-
-  const worksheet = XLSX.utils.json_to_sheet(excelData);
+  // Create workbook and worksheet
   const workbook = XLSX.utils.book_new();
+  const worksheet = XLSX.utils.aoa_to_sheet([]);
+
+  // Add header information
+  const currentDate = new Date().toLocaleDateString("en-US", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric"
+  });
+
+  // Header rows
+  XLSX.utils.sheet_add_aoa(worksheet, [
+    ["PUNJAB SAHULAT BAZAARS AUTHORITY"],
+    ["Security & Surveillance Report by IT Department"],
+    [`Date: ${currentDate}`, "", "", "", "", "", "", "", `Day: ${new Date().toLocaleDateString("en-US", { weekday: "long" })}`],
+    [],
+    ["Bazaar Name", "CCTV Camera(s)", "Faulty CCTV Camera(s)", "Walkthrough Gates", "Faulty Walkthrough Gates", "Metal Detectors", "Faulty Metal Detectors", "Biometric Status (Yes/No)", "Comments/Remarks by the IT Department"]
+  ], { origin: "A1" });
+
+  // Add data rows
+  const dataStartRow = 6;
+  reportData.marketsReport.forEach((report, index) => {
+    const rowData = [
+  (report.marketId?.name ?? ""),
+      report.totalCCTV || 0,
+      report.faultyCCTV || 0,
+      report.walkthroughGates || 0,
+      report.faultyWalkthroughGates || 0,
+      report.metalDetectors || 0,
+      report.faultyMetalDetectors || 0,
+      report.biometricStatus ? "YES" : "NO",
+      report.comments || ""
+    ];
+    XLSX.utils.sheet_add_aoa(worksheet, [rowData], { origin: `A${dataStartRow + index}` });
+  });
+
+  // Add totals row
+  const totalRow = dataStartRow + reportData.marketsReport.length;
+  const totals = reportData.marketsReport.reduce((acc, report) => ({
+    totalCCTV: acc.totalCCTV + (report.totalCCTV || 0),
+    faultyCCTV: acc.faultyCCTV + (report.faultyCCTV || 0),
+    walkthroughGates: acc.walkthroughGates + (report.walkthroughGates || 0),
+    faultyWalkthroughGates: acc.faultyWalkthroughGates + (report.faultyWalkthroughGates || 0),
+    metalDetectors: acc.metalDetectors + (report.metalDetectors || 0),
+    faultyMetalDetectors: acc.faultyMetalDetectors + (report.faultyMetalDetectors || 0)
+  }), { totalCCTV: 0, faultyCCTV: 0, walkthroughGates: 0, faultyWalkthroughGates: 0, metalDetectors: 0, faultyMetalDetectors: 0 });
+
+  XLSX.utils.sheet_add_aoa(worksheet, [
+    ["Total", totals.totalCCTV, totals.faultyCCTV, totals.walkthroughGates, totals.faultyWalkthroughGates, totals.metalDetectors, totals.faultyMetalDetectors, "", ""]
+  ], { origin: `A${totalRow}` });
+
+  // Set column widths
+  worksheet['!cols'] = [
+    { wch: 20 }, // Bazaar Name
+    { wch: 15 }, // CCTV Camera(s)
+    { wch: 18 }, // Faulty CCTV Camera(s)
+    { wch: 18 }, // Walkthrough Gates
+    { wch: 22 }, // Faulty Walkthrough Gates
+    { wch: 16 }, // Metal Detectors
+    { wch: 20 }, // Faulty Metal Detectors
+    { wch: 18 }, // Biometric Status
+    { wch: 35 }  // Comments
+  ];
+
+  // Apply styling and conditional formatting
+  const range = XLSX.utils.decode_range(worksheet['!ref'] || 'A1');
+  
+  // Style header rows
+  for (let R = 0; R <= 4; R++) {
+    for (let C = range.s.c; C <= range.e.c; C++) {
+      const cellAddress = XLSX.utils.encode_cell({ r: R, c: C });
+      if (!worksheet[cellAddress]) continue;
+      
+      worksheet[cellAddress].s = {
+        font: { bold: true, sz: R < 2 ? 14 : 12 },
+        alignment: { horizontal: 'center', vertical: 'center' },
+        border: {
+          top: { style: 'thin' },
+          bottom: { style: 'thin' },
+          left: { style: 'thin' },
+          right: { style: 'thin' }
+        }
+      };
+    }
+  }
+
+  // Apply conditional formatting to data rows
+  for (let R = dataStartRow - 1; R < totalRow; R++) {
+    for (let C = range.s.c; C <= range.e.c; C++) {
+      const cellAddress = XLSX.utils.encode_cell({ r: R, c: C });
+      if (!worksheet[cellAddress]) continue;
+
+      // Initialize cell style with default border
+      if (!worksheet[cellAddress].s) {
+        worksheet[cellAddress].s = {};
+      }
+      
+      worksheet[cellAddress].s.border = {
+        top: { style: 'thin' },
+        bottom: { style: 'thin' },
+        left: { style: 'thin' },
+        right: { style: 'thin' }
+      };
+
+      // Apply conditional formatting only to numeric columns (skip bazaar name and comments)
+      if (C >= 1 && C <= 6) { // Columns B to G (CCTV, Faulty CCTV, Gates, Faulty Gates, Metal, Faulty Metal)
+        const cellValue = worksheet[cellAddress].v;
+        
+        if (typeof cellValue === 'number') {
+          if (cellValue > 0) {
+            // Red background for values > 0
+            worksheet[cellAddress].s.fill = {
+              fgColor: { rgb: "FFCCCC" }
+            };
+          } else if (cellValue === 0) {
+            // Green background for values = 0
+            worksheet[cellAddress].s.fill = {
+              fgColor: { rgb: "CCFFCC" }
+            };
+          }
+        }
+      }
+    }
+  }
+
+  // Style totals row
+  for (let C = range.s.c; C <= range.e.c; C++) {
+    const cellAddress = XLSX.utils.encode_cell({ r: totalRow - 1, c: C });
+    if (!worksheet[cellAddress]) continue;
+    
+    // Initialize style object
+    worksheet[cellAddress].s = {
+      font: { bold: true },
+      border: {
+        top: { style: 'thick' },
+        bottom: { style: 'thick' },
+        left: { style: 'thin' },
+        right: { style: 'thin' }
+      }
+    };
+
+    // Apply conditional formatting to totals row for numeric columns
+    if (C >= 1 && C <= 6) { // Columns B to G (numeric columns)
+      const cellValue = worksheet[cellAddress].v;
+      
+      if (typeof cellValue === 'number') {
+        if (cellValue > 0) {
+          worksheet[cellAddress].s.fill = { fgColor: { rgb: "FFCCCC" } }; // Red
+        } else if (cellValue === 0) {
+          worksheet[cellAddress].s.fill = { fgColor: { rgb: "CCFFCC" } }; // Green
+        }
+      } else {
+        // Default gray background for non-numeric cells in totals row
+        worksheet[cellAddress].s.fill = { fgColor: { rgb: "E6E6E6" } };
+      }
+    } else {
+      // Default gray background for bazaar name and comments columns
+      worksheet[cellAddress].s.fill = { fgColor: { rgb: "E6E6E6" } };
+    }
+  }
+
+  // Merge header cells
+  worksheet['!merges'] = [
+    { s: { r: 0, c: 0 }, e: { r: 0, c: 8 } }, // Main title
+    { s: { r: 1, c: 0 }, e: { r: 1, c: 8 } }, // Subtitle
+  ];
+
   XLSX.utils.book_append_sheet(workbook, worksheet, "Security Report");
 
-  const fileName = `Security_Report_${
-    new Date().toISOString().split("T")[0]
-  }.xlsx`;
+  const fileName = `PSBA_Security_Surveillance_Report_${new Date().toISOString().split("T")[0]}.xlsx`;
   XLSX.writeFile(workbook, fileName);
 };
 
