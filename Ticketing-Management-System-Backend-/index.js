@@ -16,7 +16,7 @@ import cors from "cors";
 
 import { globalError } from "./controller/errorController.js";
 
-console.log("Hello")
+
 import { createWeeklyReport } from "./controller/reportController.js";
 import {
   seedMarketsAndUsers,
