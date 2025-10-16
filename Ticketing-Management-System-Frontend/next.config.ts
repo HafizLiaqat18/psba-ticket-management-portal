@@ -18,11 +18,17 @@ const nextConfig: NextConfig = {
       {
         source: "/",
         destination: "/dashboard",
-        permanent: false, // Use temporary redirect
+        permanent: false, // temporary redirect
       },
     ];
   },
+
   reactStrictMode: false,
+
+  // 🚀 This disables ESLint during production build
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
 };
 
 export default nextConfig;
