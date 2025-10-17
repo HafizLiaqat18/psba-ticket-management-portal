@@ -28,26 +28,46 @@ jobs:
             echo "ENV=production" >> $GITHUB_ENV
           fi
 
-      # Step 3: Install latest WinSCP
+      # Step 3: Install WinSCP with enhanced debugging
       - name: Install WinSCP
         run: |
+          echo "Installing dependencies..."
           sudo apt-get update
           sudo apt-get install -y wget unzip
-          wget https://winscp.net/download/WinSCP-6.3.5-Automation.zip -O WinSCP.zip || { echo "Failed to download WinSCP"; exit 1; }
+          echo "Downloading WinSCP..."
+          wget --tries=3 --timeout=30 https://winscp.net/download/WinSCP-6.3.5-Automation.zip -O WinSCP.zip || { echo "Failed to download WinSCP"; exit 1; }
+          echo "Verifying WinSCP.zip..."
+          if [ ! -f WinSCP.zip ]; then
+            echo "WinSCP.zip not found"
+            exit 1
+          fi
+          echo "Checking WinSCP.zip integrity..."
+          unzip -t WinSCP.zip || { echo "WinSCP.zip is corrupted"; exit 1; }
+          echo "Unzipping WinSCP..."
           unzip WinSCP.zip -d WinSCP || { echo "Failed to unzip WinSCP"; exit 1; }
-          ls -la WinSCP/ || { echo "WinSCP directory not found"; exit 1; }
-          if [ ! -f WinSCP/WinSCP.com ]; then
+          echo "Listing WinSCP directory contents..."
+          ls -laR WinSCP/
+          echo "Searching for WinSCP.com..."
+          WINSCP_PATH=$(find WinSCP -name WinSCP.com -type f)
+          if [ -z "$WINSCP_PATH" ]; then
             echo "WinSCP.com not found in WinSCP directory"
             exit 1
           fi
-          chmod +x WinSCP/WinSCP.com
+          echo "WinSCP.com found at: $WINSCP_PATH"
+          chmod +x "$WINSCP_PATH"
+          echo "Verifying WinSCP.com..."
+          "$WINSCP_PATH" /version || { echo "WinSCP.com is not executable"; exit 1; }
+          echo "WINSCP_PATH=$WINSCP_PATH" >> $GITHUB_ENV
 
       # Step 4: Upload Backend & Frontend using WinSCP
       - name: Upload files via WinSCP
         run: |
-          pwd  # Print working directory for debugging
-          ls -la  # List files in working directory
-          ./WinSCP/WinSCP.com /command \
+          echo "Current working directory:"
+          pwd
+          echo "Listing files in working directory:"
+          ls -la
+          echo "Using WinSCP at: ${{ env.WINSCP_PATH }}"
+          "${{ env.WINSCP_PATH }}" /command \
             "open sftp://${{ secrets.SERVER_USER_PSBA_TICKETING }}:${{ secrets.SERVER_PASSWORD_PSBA_TICKETING }}@${{ secrets.SERVER_HOST_PSBA_TICKETING }}:22 -hostkey=*" \
             "option batch abort" \
             "option confirm off" \
