@@ -5,7 +5,7 @@ on:
     branches:
       - develop
       - testing
-      - main
+      - main   # production branch
 
 jobs:
   deploy:
@@ -26,9 +26,8 @@ jobs:
             echo "env=testing" >> $GITHUB_OUTPUT
           else
             echo "env=production" >> $GITHUB_OUTPUT
-          fi
 
-      # Step 3: Upload backend & frontend folders directly to server using SCP
+      # Step 3: Upload backend & frontend folders to server
       - name: Upload backend & frontend to server
         uses: appleboy/scp-action@v0.1.7
         with:
