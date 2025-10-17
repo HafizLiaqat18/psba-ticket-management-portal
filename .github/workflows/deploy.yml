@@ -37,7 +37,7 @@ jobs:
           password: ${{ secrets.SERVER_PASSWORD_PSBA_TICKETING }}
           port: 22
           source: |
-            Ticketing-Management-System-Backend/*
+            Ticketing-Management-System-Backend-/*
             Ticketing-Management-System-Frontend/*
           target: "C:/github/ticketing-system/${{ steps.env.outputs.env }}/psba-ticket-management-portal"
           rm: true        # Remove old files before copying
