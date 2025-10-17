@@ -26,37 +26,25 @@ jobs:
             echo "env=testing" >> $GITHUB_OUTPUT
           else
             echo "env=production" >> $GITHUB_OUTPUT
-          fi
 
-      # Step 3: Prepare deployment folder (avoid permission errors)
-      - name: Prepare deployment folder
-        run: |
-          mkdir -p deploy
-          rsync -av --no-perms --no-owner --no-group \
-            --exclude='node_modules' \
-            --exclude='.git' \
-            --exclude='.github' \
-            --exclude='*.log' \
-            --exclude='.env*' \
-            ./ deploy/
-
-      # Step 4: Upload files to Windows server using password auth
-      - name: Upload files to server (password auth)
+      # Step 3: Upload backend & frontend folders directly (no deploy folder)
+      - name: Upload backend & frontend to server
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.SERVER_HOST_PSBA_TICKETING }}
           username: ${{ secrets.SERVER_USER_PSBA_TICKETING }}
           password: ${{ secrets.SERVER_PASSWORD_PSBA_TICKETING }}
           port: 22
-          source: "./deploy/*"
+          source: |
+            Ticketing-Management-System-Backend/*
+            Ticketing-Management-System-Frontend/*
           target: "C:/github/ticketing-system/${{ steps.env.outputs.env }}/psba-ticket-management-portal"
-          rm: true                 # Remove target folder before copying (safe deploy)
-          overwrite: false          # ✅ Fix Windows tar: disable --overwrite flag
+          rm: true                 # Remove old files before copying
+          overwrite: true
           debug: true
-          tar_exec: "tar"           # Optional: can set to "C:/Program Files/Git/usr/bin/tar.exe" if Git Bash is installed
 
-      # Step 5: Run remote PowerShell deployment script
-      - name: Run remote PowerShell deploy script (password auth)
+      # Step 4: Run remote PowerShell deployment script
+      - name: Run remote PowerShell deploy script
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.SERVER_HOST_PSBA_TICKETING }}
