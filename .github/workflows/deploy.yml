@@ -12,9 +12,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # 1️⃣ Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # 2️⃣ Detect target environment
       - name: Detect target environment
         id: env
         run: |
@@ -25,7 +27,7 @@ jobs:
           else
             echo "env=production" >> $GITHUB_OUTPUT
           fi
-          
+      # 3️⃣ Upload backend folder (Windows-friendly)
       - name: Upload backend folder
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -38,9 +40,11 @@ jobs:
           rm: true
           overwrite: true
           debug: true
+          tar: false               # 🔹 DISABLE tar for Windows
           timeout: 5m
           command_timeout: 10m
 
+      # 4️⃣ Upload frontend folder (Windows-friendly)
       - name: Upload frontend folder
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -53,9 +57,11 @@ jobs:
           rm: true
           overwrite: true
           debug: true
+          tar: false               # 🔹 DISABLE tar for Windows
           timeout: 5m
           command_timeout: 10m
 
+      # 5️⃣ Run remote PowerShell deploy script
       - name: Run remote PowerShell deploy script
         uses: appleboy/ssh-action@v1.2.0
         with:
