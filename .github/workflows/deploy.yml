@@ -26,34 +26,26 @@ jobs:
             echo "env=testing" >> $GITHUB_OUTPUT
           else
             echo "env=production" >> $GITHUB_OUTPUT
+          fi
 
-      # Step 3: Zip backend & frontend folders
-      - name: Zip backend
-        run: |
-          cd Ticketing-Management-System-Backend-
-          zip -r ../backend.zip ./*
-
-      - name: Zip frontend
-        run: |
-          cd Ticketing-Management-System-Frontend
-          zip -r ../frontend.zip ./*
-
-      # Step 4: Upload backend & frontend zips to Windows server
-      - name: Upload backend & frontend zips
+      # Step 3: Upload backend & frontend folders directly to server using SCP
+      - name: Upload backend & frontend to server
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.SERVER_HOST_PSBA_TICKETING }}
           username: ${{ secrets.SERVER_USER_PSBA_TICKETING }}
           password: ${{ secrets.SERVER_PASSWORD_PSBA_TICKETING }}
           port: 22
-          source: "backend.zip,frontend.zip"
+          source: |
+            Ticketing-Management-System-Backend-/*
+            Ticketing-Management-System-Frontend/*
           target: "C:/github/ticketing-system/${{ steps.env.outputs.env }}/psba-ticket-management-portal"
-          rm: true
-          overwrite: true
-          debug: true
+          rm: true               # Remove old files before copying
+          overwrite: true        # Overwrite existing files
+          debug: true            # Enable debug logs
 
-      # Step 5: Unzip folders on Windows server via PowerShell
-      - name: Unzip backend & frontend on server
+      # Step 4: Run remote PowerShell deployment script
+      - name: Run remote PowerShell deploy script
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.SERVER_HOST_PSBA_TICKETING }}
@@ -61,13 +53,4 @@ jobs:
           password: ${{ secrets.SERVER_PASSWORD_PSBA_TICKETING }}
           port: 22
           script: |
-            $target = "C:/github/ticketing-system/${{ steps.env.outputs.env }}/psba-ticket-management-portal"
-            # Remove existing folders
-            Remove-Item -Recurse -Force "$target/Backend" -ErrorAction SilentlyContinue
-            Remove-Item -Recurse -Force "$target/Frontend" -ErrorAction SilentlyContinue
-            # Unzip uploaded files
-            Expand-Archive -Force "$target/backend.zip" "$target/Backend"
-            Expand-Archive -Force "$target/frontend.zip" "$target/Frontend"
-            # Remove zip files after extraction
-            Remove-Item "$target/backend.zip"
-            Remove-Item "$target/frontend.zip"
+            powershell -NoProfile -ExecutionPolicy Bypass -File "C:\github\ticketing-system\deploy_scripts\deploy.ps1" -env ${{ steps.env.outputs.env }}
