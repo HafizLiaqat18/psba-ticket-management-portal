@@ -26,6 +26,7 @@ jobs:
             echo "env=testing" >> $GITHUB_OUTPUT
           else
             echo "env=production" >> $GITHUB_OUTPUT
+          fi
 
       # Step 3: Upload backend & frontend folders directly to server
       - name: Upload backend & frontend to server
@@ -35,7 +36,9 @@ jobs:
           username: ${{ secrets.SERVER_USER_PSBA_TICKETING }}
           password: ${{ secrets.SERVER_PASSWORD_PSBA_TICKETING }}
           port: 22
-          source: "Ticketing-Management-System-Backend-,Ticketing-Management-System-Frontend"
+          source: |
+            Ticketing-Management-System-Backend-/*
+            Ticketing-Management-System-Frontend/*
           target: "C:/github/ticketing-system/${{ steps.env.outputs.env }}/psba-ticket-management-portal"
           rm: true               # Remove old files before copying
           overwrite: true        # Overwrite existing files
