@@ -24,7 +24,8 @@ jobs:
             echo "env=testing" >> $GITHUB_OUTPUT
           else
             echo "env=production" >> $GITHUB_OUTPUT
-
+          fi
+          
       - name: Upload backend folder
         uses: appleboy/scp-action@v0.1.7
         with:
