@@ -40,9 +40,9 @@ jobs:
             --exclude='.env*' \
             ./ deploy/
 
-      # Step 4: Upload files to Windows server using password
+      # Step 4: Upload files to Windows server using password auth
       - name: Upload files to server (password auth)
-        uses: appleboy/scp-action@master
+        uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.SERVER_HOST_PSBA_TICKETING }}
           username: ${{ secrets.SERVER_USER_PSBA_TICKETING }}
@@ -50,12 +50,14 @@ jobs:
           port: 22
           source: "./deploy/*"
           target: "C:/github/ticketing-system/${{ steps.env.outputs.env }}/psba-ticket-management-portal"
-          overwrite: true
+          rm: true                 # Remove target folder before copying (safe deploy)
+          overwrite: false          # ✅ Fix Windows tar: disable --overwrite flag
           debug: true
+          tar_exec: "tar"           # Optional: can set to "C:/Program Files/Git/usr/bin/tar.exe" if Git Bash is installed
 
       # Step 5: Run remote PowerShell deployment script
       - name: Run remote PowerShell deploy script (password auth)
-        uses: appleboy/ssh-action@master
+        uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.SERVER_HOST_PSBA_TICKETING }}
           username: ${{ secrets.SERVER_USER_PSBA_TICKETING }}
