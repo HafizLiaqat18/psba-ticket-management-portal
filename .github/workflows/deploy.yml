@@ -27,7 +27,13 @@ jobs:
           else
             echo "env=production" >> $GITHUB_OUTPUT
           fi
-      # 3️⃣ Upload backend folder (Windows-friendly)
+
+      # 3️⃣ Debug backend target path
+      - name: Debug backend target path
+        run: |
+          echo "Backend target path: /c/github/ticketing-system/${{ steps.env.outputs.env }}/psba-ticket-management-portal/Backend"
+
+      # 4️⃣ Upload backend folder (Windows-friendly)
       - name: Upload backend folder
         uses: appleboy/scp-action@v1.0.0
         with:
@@ -36,15 +42,21 @@ jobs:
           password: ${{ secrets.SERVER_PASSWORD }}
           port: 22
           source: "Ticketing-Management-System-Backend-/**"
-          target: "C:/github/ticketing-system/${{ steps.env.outputs.env }}/psba-ticket-management-portal/Backend"
+          target: "/c/github/ticketing-system/${{ steps.env.outputs.env }}/psba-ticket-management-portal/Backend"  # 🔹 Unix-style /c/
           rm: true
           overwrite: true
           debug: true
           tar: false               # 🔹 DISABLE tar for Windows
+          tar_dereference: true    # 🔹 Handle symlinks recursively
           timeout: 5m
           command_timeout: 10m
 
-      # 4️⃣ Upload frontend folder (Windows-friendly)
+      # 5️⃣ Debug frontend target path
+      - name: Debug frontend target path
+        run: |
+          echo "Frontend target path: /c/github/ticketing-system/${{ steps.env.outputs.env }}/psba-ticket-management-portal/Frontend"
+
+      # 6️⃣ Upload frontend folder (Windows-friendly)
       - name: Upload frontend folder
         uses: appleboy/scp-action@v1.0.0
         with:
@@ -53,15 +65,16 @@ jobs:
           password: ${{ secrets.SERVER_PASSWORD }}
           port: 22
           source: "Ticketing-Management-System-Frontend/**"
-          target: "C:/github/ticketing-system/${{ steps.env.outputs.env }}/psba-ticket-management-portal/Frontend"
+          target: "/c/github/ticketing-system/${{ steps.env.outputs.env }}/psba-ticket-management-portal/Frontend"  # 🔹 Unix-style /c/
           rm: true
           overwrite: true
           debug: true
           tar: false               # 🔹 DISABLE tar for Windows
+          tar_dereference: true    # 🔹 Handle symlinks recursively
           timeout: 5m
           command_timeout: 10m
 
-      # 5️⃣ Run remote PowerShell deploy script
+      # 7️⃣ Run remote PowerShell deploy script
       - name: Run remote PowerShell deploy script
         uses: appleboy/ssh-action@v1.2.0
         with:
