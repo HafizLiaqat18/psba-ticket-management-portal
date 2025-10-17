@@ -33,12 +33,20 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y wget unzip
-          wget https://winscp.net/download/WinSCP-6.3.5-Automation.zip -O WinSCP.zip
-          unzip WinSCP.zip -d WinSCP
+          wget https://winscp.net/download/WinSCP-6.3.5-Automation.zip -O WinSCP.zip || { echo "Failed to download WinSCP"; exit 1; }
+          unzip WinSCP.zip -d WinSCP || { echo "Failed to unzip WinSCP"; exit 1; }
+          ls -la WinSCP/ || { echo "WinSCP directory not found"; exit 1; }
+          if [ ! -f WinSCP/WinSCP.com ]; then
+            echo "WinSCP.com not found in WinSCP directory"
+            exit 1
+          fi
+          chmod +x WinSCP/WinSCP.com
 
       # Step 4: Upload Backend & Frontend using WinSCP
       - name: Upload files via WinSCP
         run: |
+          pwd  # Print working directory for debugging
+          ls -la  # List files in working directory
           ./WinSCP/WinSCP.com /command \
             "open sftp://${{ secrets.SERVER_USER_PSBA_TICKETING }}:${{ secrets.SERVER_PASSWORD_PSBA_TICKETING }}@${{ secrets.SERVER_HOST_PSBA_TICKETING }}:22 -hostkey=*" \
             "option batch abort" \
