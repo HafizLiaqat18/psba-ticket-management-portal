@@ -41,7 +41,6 @@ jobs:
           rm: true
           overwrite: true
           debug: true
-          tar: false
           tar_dereference: true
           timeout: 5m
           command_timeout: 10m
@@ -61,7 +60,6 @@ jobs:
           rm: true
           overwrite: true
           debug: true
-          tar: false
           tar_dereference: true
           timeout: 5m
           command_timeout: 10m
