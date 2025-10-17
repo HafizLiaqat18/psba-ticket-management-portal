@@ -38,8 +38,8 @@ jobs:
           rm: true
           overwrite: true
           debug: true
-          timeout: 300
-          command_timeout: 300
+          timeout: 5m
+          command_timeout: 10m
 
       - name: Upload frontend folder
         uses: appleboy/scp-action@v0.1.7
@@ -53,8 +53,8 @@ jobs:
           rm: true
           overwrite: true
           debug: true
-          timeout: 300
-          command_timeout: 300
+          timeout: 5m
+          command_timeout: 10m
 
       - name: Run remote PowerShell deploy script
         uses: appleboy/ssh-action@v1.2.0
