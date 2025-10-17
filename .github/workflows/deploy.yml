@@ -26,38 +26,35 @@ jobs:
             echo "env=production" >> $GITHUB_OUTPUT
           fi
 
-      - name: Zip backend and frontend
-        run: |
-          zip -r backend.zip Ticketing-Management-System-Backend-
-          zip -r frontend.zip Ticketing-Management-System-Frontend
-
-      - name: Upload backend zip
+      - name: Upload backend folder
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.SERVER_HOST_PSBA_TICKETING }}
           username: ${{ secrets.SERVER_USER_PSBA_TICKETING }}
           password: ${{ secrets.SERVER_PASSWORD_PSBA_TICKETING }}
           port: 22
-          source: "backend.zip"
-          target: "C:/github/ticketing-system/${{ steps.env.outputs.env }}/psba-ticket-management-portal"
+          source: "Ticketing-Management-System-Backend-/**"
+          target: "C:/github/ticketing-system/${{ steps.env.outputs.env }}/psba-ticket-management-portal/Backend"
           rm: true
           overwrite: true
           debug: true
+          tar: false   # <-- IMPORTANT: disables tar, avoids empty archive
 
-      - name: Upload frontend zip
+      - name: Upload frontend folder
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.SERVER_HOST_PSBA_TICKETING }}
           username: ${{ secrets.SERVER_USER_PSBA_TICKETING }}
           password: ${{ secrets.SERVER_PASSWORD_PSBA_TICKETING }}
           port: 22
-          source: "frontend.zip"
-          target: "C:/github/ticketing-system/${{ steps.env.outputs.env }}/psba-ticket-management-portal"
+          source: "Ticketing-Management-System-Frontend/**"
+          target: "C:/github/ticketing-system/${{ steps.env.outputs.env }}/psba-ticket-management-portal/Frontend"
           rm: true
           overwrite: true
           debug: true
+          tar: false   # <-- disables tar
 
-      - name: Unzip files on Windows server
+      - name: Run remote PowerShell deploy script
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.SERVER_HOST_PSBA_TICKETING }}
@@ -65,7 +62,4 @@ jobs:
           password: ${{ secrets.SERVER_PASSWORD_PSBA_TICKETING }}
           port: 22
           script: |
-            powershell -NoProfile -ExecutionPolicy Bypass -Command "
-              Expand-Archive -Force 'C:\github\ticketing-system\${{ steps.env.outputs.env }}\psba-ticket-management-portal\backend.zip' -DestinationPath 'C:\github\ticketing-system\${{ steps.env.outputs.env }}\psba-ticket-management-portal\Backend';
-              Expand-Archive -Force 'C:\github\ticketing-system\${{ steps.env.outputs.env }}\psba-ticket-management-portal\frontend.zip' -DestinationPath 'C:\github\ticketing-system\${{ steps.env.outputs.env }}\psba-ticket-management-portal\Frontend';
-            "
+            powershell -NoProfile -ExecutionPolicy Bypass -File "C:\github\ticketing-system\deploy_scripts\deploy.ps1" -env ${{ steps.env.outputs.env }}
