@@ -26,29 +26,25 @@ jobs:
             echo "env=testing" >> $GITHUB_OUTPUT
           else
             echo "env=production" >> $GITHUB_OUTPUT
+          fi
 
-      # Step 3: Find all top-level folders (backend & frontend) dynamically
-      - name: Prepare dynamic folder list
-        id: folders
-        run: |
-          # List all folders in the repo root
-          echo "folders=$(ls -d */ | tr '\n' ',')" >> $GITHUB_OUTPUT
-
-      # Step 4: Upload all top-level folders to the server
-      - name: Upload all folders to server
+      # Step 3: Upload backend & frontend folder contents directly to server
+      - name: Upload backend & frontend to server
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.SERVER_HOST_PSBA_TICKETING }}
           username: ${{ secrets.SERVER_USER_PSBA_TICKETING }}
           password: ${{ secrets.SERVER_PASSWORD_PSBA_TICKETING }}
           port: 22
-          source: "${{ steps.folders.outputs.folders }}*"
+          source: |
+            Ticketing-Management-System-Backend-/*
+            Ticketing-Management-System-Frontend/*
           target: "C:/github/ticketing-system/${{ steps.env.outputs.env }}/psba-ticket-management-portal"
-          rm: true
-          overwrite: true
-          debug: true
+          rm: true               # Remove old files before copying
+          overwrite: true        # Overwrite existing files
+          debug: true            # Enable debug logs
 
-      # Step 5: Run remote PowerShell deployment script
+      # Step 4: Run remote PowerShell deployment script
       - name: Run remote PowerShell deploy script
         uses: appleboy/ssh-action@v1.2.0
         with:
