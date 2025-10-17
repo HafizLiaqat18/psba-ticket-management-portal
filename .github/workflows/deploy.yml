@@ -12,11 +12,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2️⃣ Detect target environment
       - name: Detect target environment
         id: env
         run: |
@@ -28,12 +26,9 @@ jobs:
             echo "env=production" >> $GITHUB_OUTPUT
           fi
 
-      # 3️⃣ Debug backend target path
       - name: Debug backend target path
-        run: |
-          echo "Backend target path: /c/github/ticketing-system/${{ steps.env.outputs.env }}/psba-ticket-management-portal/Backend"
+        run: echo '/c/github/ticketing-system/${{ steps.env.outputs.env }}/psba-ticket-management-portal/Ticketing-Management-System-Backend-'
 
-      # 4️⃣ Upload backend folder (Windows-friendly)
       - name: Upload backend folder
         uses: appleboy/scp-action@v1.0.0
         with:
@@ -42,21 +37,18 @@ jobs:
           password: ${{ secrets.SERVER_PASSWORD }}
           port: 22
           source: "Ticketing-Management-System-Backend-/**"
-          target: "/c/github/ticketing-system/${{ steps.env.outputs.env }}/psba-ticket-management-portal/Backend"  # 🔹 Unix-style /c/
+          target: "/c/github/ticketing-system/${{ steps.env.outputs.env }}/psba-ticket-management-portal/Ticketing-Management-System-Backend-"
           rm: true
           overwrite: true
           debug: true
-          tar: false               # 🔹 DISABLE tar for Windows
-          tar_dereference: true    # 🔹 Handle symlinks recursively
+          tar: false
+          tar_dereference: true
           timeout: 5m
           command_timeout: 10m
 
-      # 5️⃣ Debug frontend target path
       - name: Debug frontend target path
-        run: |
-          echo "Frontend target path: /c/github/ticketing-system/${{ steps.env.outputs.env }}/psba-ticket-management-portal/Frontend"
+        run: echo '/c/github/ticketing-system/${{ steps.env.outputs.env }}/psba-ticket-management-portal/Ticketing-Management-System-Frontend'
 
-      # 6️⃣ Upload frontend folder (Windows-friendly)
       - name: Upload frontend folder
         uses: appleboy/scp-action@v1.0.0
         with:
@@ -65,16 +57,15 @@ jobs:
           password: ${{ secrets.SERVER_PASSWORD }}
           port: 22
           source: "Ticketing-Management-System-Frontend/**"
-          target: "/c/github/ticketing-system/${{ steps.env.outputs.env }}/psba-ticket-management-portal/Frontend"  # 🔹 Unix-style /c/
+          target: "/c/github/ticketing-system/${{ steps.env.outputs.env }}/psba-ticket-management-portal/Ticketing-Management-System-Frontend"
           rm: true
           overwrite: true
           debug: true
-          tar: false               # 🔹 DISABLE tar for Windows
-          tar_dereference: true    # 🔹 Handle symlinks recursively
+          tar: false
+          tar_dereference: true
           timeout: 5m
           command_timeout: 10m
 
-      # 7️⃣ Run remote PowerShell deploy script
       - name: Run remote PowerShell deploy script
         uses: appleboy/ssh-action@v1.2.0
         with:
