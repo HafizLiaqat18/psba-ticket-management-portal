@@ -16,20 +16,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # Step 2: Set up SSH agent
-      - name: Set up SSH
-        uses: webfactory/ssh-agent@v0.7.0
-        with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY_PSBA_TICKETING }}
-
-      # Step 3: Add known hosts
-      - name: Add known hosts
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_KNOWN_HOSTS_PSBA_TICKETING }}" > ~/.ssh/known_hosts
-          chmod 644 ~/.ssh/known_hosts
-
-      # Step 4: Detect target environment
+      # Step 2: Detect target environment
       - name: Detect target environment
         id: env
         run: |
@@ -41,32 +28,32 @@ jobs:
             echo "env=production" >> $GITHUB_OUTPUT
           fi
 
-      # Step 5: Prepare deployment folder (exclude unwanted files)
+      # Step 3: Prepare deployment folder (exclude unwanted files)
       - name: Prepare deployment folder
         run: |
           rm -rf deploy
           mkdir deploy
           rsync -av --exclude='node_modules' --exclude='.git' --exclude='.github' --exclude='*.log' --exclude='.env*' ./ deploy/
 
-      # Step 6: Upload files to server
+      # Step 4: Upload files to server via SCP (password auth)
       - name: Upload files to server
-        uses: appleboy/scp-action@master
+        uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.SERVER_HOST_PSBA_TICKETING }}
           username: ${{ secrets.SERVER_USER_PSBA_TICKETING }}
-          key: ${{ secrets.SSH_PRIVATE_KEY_PSBA_TICKETING }}
+          password: ${{ secrets.SERVER_PASSWORD_PSBA_TICKETING }}
           port: 22
           source: "./deploy/*"
           target: ${{ secrets.DEST_BASE_PSBA_TICKETING }}/${{ steps.env.outputs.env }}/psba-ticket-management-portal
           rm: true
 
-      # Step 7: Run remote PowerShell deploy script
+      # Step 5: Run remote PowerShell deploy script (password auth)
       - name: Run remote PowerShell deploy script
-        uses: appleboy/ssh-action@master
+        uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.SERVER_HOST_PSBA_TICKETING }}
           username: ${{ secrets.SERVER_USER_PSBA_TICKETING }}
-          key: ${{ secrets.SSH_PRIVATE_KEY_PSBA_TICKETING }}
+          password: ${{ secrets.SERVER_PASSWORD_PSBA_TICKETING }}
           port: 22
           script: |
             powershell -NoProfile -ExecutionPolicy Bypass -File "C:\github\ticketing-system\deploy_scripts\deploy.ps1" -env ${{ steps.env.outputs.env }}
