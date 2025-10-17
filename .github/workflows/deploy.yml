@@ -16,7 +16,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # Step 2: Detect target environment (based on branch)
+      # Step 2: Detect target environment based on branch
       - name: Detect target environment
         id: env
         run: |
@@ -26,25 +26,29 @@ jobs:
             echo "env=testing" >> $GITHUB_OUTPUT
           else
             echo "env=production" >> $GITHUB_OUTPUT
-          fi
 
-      # Step 3: Upload backend & frontend folders correctly
-      - name: Upload backend & frontend
+      # Step 3: Find all top-level folders (backend & frontend) dynamically
+      - name: Prepare dynamic folder list
+        id: folders
+        run: |
+          # List all folders in the repo root
+          echo "folders=$(ls -d */ | tr '\n' ',')" >> $GITHUB_OUTPUT
+
+      # Step 4: Upload all top-level folders to the server
+      - name: Upload all folders to server
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.SERVER_HOST_PSBA_TICKETING }}
           username: ${{ secrets.SERVER_USER_PSBA_TICKETING }}
           password: ${{ secrets.SERVER_PASSWORD_PSBA_TICKETING }}
           port: 22
-          source: |
-            Ticketing-Management-System-Backend-/*
-            Ticketing-Management-System-Frontend/*
+          source: "${{ steps.folders.outputs.folders }}*"
           target: "C:/github/ticketing-system/${{ steps.env.outputs.env }}/psba-ticket-management-portal"
           rm: true
           overwrite: true
           debug: true
 
-      # Step 4: Run remote PowerShell deployment script
+      # Step 5: Run remote PowerShell deployment script
       - name: Run remote PowerShell deploy script
         uses: appleboy/ssh-action@v1.2.0
         with:
