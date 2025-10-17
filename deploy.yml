@@ -12,10 +12,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Detect target environment
+      - name: Detect environment
         id: env
         run: |
           if [[ "${GITHUB_REF##*/}" == "develop" ]]; then
@@ -26,35 +26,38 @@ jobs:
             echo "env=production" >> $GITHUB_OUTPUT
           fi
 
-      - name: Upload backend folder
+      - name: Zip backend & frontend
+        run: |
+          zip -r backend.zip Ticketing-Management-System-Backend-
+          zip -r frontend.zip Ticketing-Management-System-Frontend
+
+      - name: Upload backend zip
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.SERVER_HOST_PSBA_TICKETING }}
           username: ${{ secrets.SERVER_USER_PSBA_TICKETING }}
           password: ${{ secrets.SERVER_PASSWORD_PSBA_TICKETING }}
           port: 22
-          source: "Ticketing-Management-System-Backend-/**"
-          target: "C:/github/ticketing-system/${{ steps.env.outputs.env }}/psba-ticket-management-portal/Backend"
+          source: "backend.zip"
+          target: "C:/github/ticketing-system/${{ steps.env.outputs.env }}/psba-ticket-management-portal"
           rm: true
           overwrite: true
           debug: true
-          tar: false   # <-- IMPORTANT: disables tar, avoids empty archive
 
-      - name: Upload frontend folder
+      - name: Upload frontend zip
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.SERVER_HOST_PSBA_TICKETING }}
           username: ${{ secrets.SERVER_USER_PSBA_TICKETING }}
           password: ${{ secrets.SERVER_PASSWORD_PSBA_TICKETING }}
           port: 22
-          source: "Ticketing-Management-System-Frontend/**"
-          target: "C:/github/ticketing-system/${{ steps.env.outputs.env }}/psba-ticket-management-portal/Frontend"
+          source: "frontend.zip"
+          target: "C:/github/ticketing-system/${{ steps.env.outputs.env }}/psba-ticket-management-portal"
           rm: true
           overwrite: true
           debug: true
-          tar: false   # <-- disables tar
 
-      - name: Run remote PowerShell deploy script
+      - name: Unzip on Windows server
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.SERVER_HOST_PSBA_TICKETING }}
@@ -62,4 +65,7 @@ jobs:
           password: ${{ secrets.SERVER_PASSWORD_PSBA_TICKETING }}
           port: 22
           script: |
-            powershell -NoProfile -ExecutionPolicy Bypass -File "C:\github\ticketing-system\deploy_scripts\deploy.ps1" -env ${{ steps.env.outputs.env }}
+            powershell -NoProfile -ExecutionPolicy Bypass -Command "
+              Expand-Archive -Force 'C:\github\ticketing-system\${{ steps.env.outputs.env }}\psba-ticket-management-portal\backend.zip' -DestinationPath 'C:\github\ticketing-system\${{ steps.env.outputs.env }}\psba-ticket-management-portal\Backend';
+              Expand-Archive -Force 'C:\github\ticketing-system\${{ steps.env.outputs.env }}\psba-ticket-management-portal\frontend.zip' -DestinationPath 'C:\github\ticketing-system\${{ steps.env.outputs.env }}\psba-ticket-management-portal\Frontend';
+            "
