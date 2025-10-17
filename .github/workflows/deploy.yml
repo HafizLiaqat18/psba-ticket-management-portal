@@ -12,10 +12,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repo
+      # Step 1: Checkout repository
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Detect environment
+      # Step 2: Detect target environment based on branch
+      - name: Detect target environment
         id: env
         run: |
           if [[ "${GITHUB_REF##*/}" == "develop" ]]; then
@@ -24,40 +26,34 @@ jobs:
             echo "env=testing" >> $GITHUB_OUTPUT
           else
             echo "env=production" >> $GITHUB_OUTPUT
-          fi
 
-      - name: Zip backend & frontend
+      # Step 3: Zip backend & frontend folders
+      - name: Zip backend
         run: |
-          zip -r backend.zip Ticketing-Management-System-Backend-
-          zip -r frontend.zip Ticketing-Management-System-Frontend
+          cd Ticketing-Management-System-Backend-
+          zip -r ../backend.zip ./*
 
-      - name: Upload backend zip
+      - name: Zip frontend
+        run: |
+          cd Ticketing-Management-System-Frontend
+          zip -r ../frontend.zip ./*
+
+      # Step 4: Upload backend & frontend zips to Windows server
+      - name: Upload backend & frontend zips
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.SERVER_HOST_PSBA_TICKETING }}
           username: ${{ secrets.SERVER_USER_PSBA_TICKETING }}
           password: ${{ secrets.SERVER_PASSWORD_PSBA_TICKETING }}
           port: 22
-          source: "backend.zip"
+          source: "backend.zip,frontend.zip"
           target: "C:/github/ticketing-system/${{ steps.env.outputs.env }}/psba-ticket-management-portal"
           rm: true
           overwrite: true
           debug: true
 
-      - name: Upload frontend zip
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.SERVER_HOST_PSBA_TICKETING }}
-          username: ${{ secrets.SERVER_USER_PSBA_TICKETING }}
-          password: ${{ secrets.SERVER_PASSWORD_PSBA_TICKETING }}
-          port: 22
-          source: "frontend.zip"
-          target: "C:/github/ticketing-system/${{ steps.env.outputs.env }}/psba-ticket-management-portal"
-          rm: true
-          overwrite: true
-          debug: true
-
-      - name: Unzip on Windows server
+      # Step 5: Unzip folders on Windows server via PowerShell
+      - name: Unzip backend & frontend on server
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.SERVER_HOST_PSBA_TICKETING }}
@@ -65,7 +61,13 @@ jobs:
           password: ${{ secrets.SERVER_PASSWORD_PSBA_TICKETING }}
           port: 22
           script: |
-            powershell -NoProfile -ExecutionPolicy Bypass -Command "
-              Expand-Archive -Force 'C:\github\ticketing-system\${{ steps.env.outputs.env }}\psba-ticket-management-portal\backend.zip' -DestinationPath 'C:\github\ticketing-system\${{ steps.env.outputs.env }}\psba-ticket-management-portal\Backend';
-              Expand-Archive -Force 'C:\github\ticketing-system\${{ steps.env.outputs.env }}\psba-ticket-management-portal\frontend.zip' -DestinationPath 'C:\github\ticketing-system\${{ steps.env.outputs.env }}\psba-ticket-management-portal\Frontend';
-            "
+            $target = "C:/github/ticketing-system/${{ steps.env.outputs.env }}/psba-ticket-management-portal"
+            # Remove existing folders
+            Remove-Item -Recurse -Force "$target/Backend" -ErrorAction SilentlyContinue
+            Remove-Item -Recurse -Force "$target/Frontend" -ErrorAction SilentlyContinue
+            # Unzip uploaded files
+            Expand-Archive -Force "$target/backend.zip" "$target/Backend"
+            Expand-Archive -Force "$target/frontend.zip" "$target/Frontend"
+            # Remove zip files after extraction
+            Remove-Item "$target/backend.zip"
+            Remove-Item "$target/frontend.zip"
