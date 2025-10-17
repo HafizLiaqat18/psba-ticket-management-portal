@@ -26,27 +26,28 @@ jobs:
             echo "ENV=testing" >> $GITHUB_ENV
           else
             echo "ENV=production" >> $GITHUB_ENV
+          fi
 
-      # Step 3: Install WinSCP
+      # Step 3: Install latest WinSCP
       - name: Install WinSCP
         run: |
           sudo apt-get update
           sudo apt-get install -y wget unzip
-          wget https://winscp.net/download/WinSCP-5.21.10-Automation.zip -O WinSCP.zip
+          wget https://winscp.net/download/WinSCP-6.3.5-Automation.zip -O WinSCP.zip
           unzip WinSCP.zip -d WinSCP
 
       # Step 4: Upload Backend & Frontend using WinSCP
       - name: Upload files via WinSCP
         run: |
-          ./WinSCP/WinSCP.com /command ^
-            "open sftp://${{ secrets.SERVER_USER }}:${{ secrets.SERVER_PASSWORD }}@${{ secrets.SERVER_HOST }}:22" ^
-            "option batch abort" ^
-            "option confirm off" ^
-            "put -delete Ticketing-Management-System-Backend-/* C:/github/ticketing-system/${ENV}/psba-ticket-management-portal/Backend/" ^
-            "put -delete Ticketing-Management-System-Frontend/* C:/github/ticketing-system/${ENV}/psba-ticket-management-portal/Frontend/" ^
-            "exit"
+          ./WinSCP/WinSCP.com /command \
+            "open sftp://${{ secrets.SERVER_USER }}:${{ secrets.SERVER_PASSWORD }}@${{ secrets.SERVER_HOST }}:22 -hostkey=*" \
+            "option batch abort" \
+            "option confirm off" \
+            "put -delete ./Ticketing-Management-System-Backend/* C:/github/ticketing-system/${{ env.ENV }}/psba-ticket-management-portal/Backend/" \
+            "put -delete ./Ticketing-Management-System-Frontend/* C:/github/ticketing-system/${{ env.ENV }}/psba-ticket-management-portal/Frontend/" \
+            "exit" || { echo "SFTP upload failed"; exit 1; }
 
-      # Step 5: Optional — run your deploy PowerShell script remotely
+      # Step 5: Run remote PowerShell deploy script
       - name: Run remote PowerShell deploy script
         uses: appleboy/ssh-action@v1.2.0
         with:
@@ -55,4 +56,5 @@ jobs:
           password: ${{ secrets.SERVER_PASSWORD }}
           port: 22
           script: |
-            powershell -NoProfile -ExecutionPolicy Bypass -File "C:\github\ticketing-system\deploy_scripts\deploy.ps1" -env $ENV
+            powershell -NoProfile -ExecutionPolicy Bypass -File "C:\github\ticketing-system\deploy_scripts\deploy.ps1" -env ${{ env.ENV }}
+        continue-on-error: false
