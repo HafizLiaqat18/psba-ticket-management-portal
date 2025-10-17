@@ -1,55 +1,58 @@
-name: Deploy to Windows Server (MERN + IIS + PM2)
+name: Deploy to Windows Server
 
 on:
   push:
     branches:
       - develop
       - testing
-      - main   # production branch
+      - main
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Checkout repository
+      # Step 1: Checkout repo
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # Step 2: Detect target environment based on branch
-      - name: Detect target environment
+      # Step 2: Set environment variable based on branch
+      - name: Set environment
         id: env
         run: |
           if [[ "${GITHUB_REF##*/}" == "develop" ]]; then
-            echo "env=development" >> $GITHUB_OUTPUT
+            echo "ENV=development" >> $GITHUB_ENV
           elif [[ "${GITHUB_REF##*/}" == "testing" ]]; then
-            echo "env=testing" >> $GITHUB_OUTPUT
+            echo "ENV=testing" >> $GITHUB_ENV
           else
-            echo "env=production" >> $GITHUB_OUTPUT
-            fi
-      # Step 3: Upload backend & frontend folders to server
-      - name: Upload backend & frontend to server
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.SERVER_HOST_PSBA_TICKETING }}
-          username: ${{ secrets.SERVER_USER_PSBA_TICKETING }}
-          password: ${{ secrets.SERVER_PASSWORD_PSBA_TICKETING }}
-          port: 22
-          source: |
-            Ticketing-Management-System-Backend-/*
-            Ticketing-Management-System-Frontend/*
-          target: "C:/github/ticketing-system/${{ steps.env.outputs.env }}/psba-ticket-management-portal"
-          rm: true               # Remove old files before copying
-          overwrite: true        # Overwrite existing files
-          debug: true            # Enable debug logs
+            echo "ENV=production" >> $GITHUB_ENV
 
-      # Step 4: Run remote PowerShell deployment script
+      # Step 3: Install WinSCP
+      - name: Install WinSCP
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y wget unzip
+          wget https://winscp.net/download/WinSCP-5.21.10-Automation.zip -O WinSCP.zip
+          unzip WinSCP.zip -d WinSCP
+
+      # Step 4: Upload Backend & Frontend using WinSCP
+      - name: Upload files via WinSCP
+        run: |
+          ./WinSCP/WinSCP.com /command ^
+            "open sftp://${{ secrets.SERVER_USER }}:${{ secrets.SERVER_PASSWORD }}@${{ secrets.SERVER_HOST }}:22" ^
+            "option batch abort" ^
+            "option confirm off" ^
+            "put -delete Ticketing-Management-System-Backend-/* C:/github/ticketing-system/${ENV}/psba-ticket-management-portal/Backend/" ^
+            "put -delete Ticketing-Management-System-Frontend/* C:/github/ticketing-system/${ENV}/psba-ticket-management-portal/Frontend/" ^
+            "exit"
+
+      # Step 5: Optional — run your deploy PowerShell script remotely
       - name: Run remote PowerShell deploy script
         uses: appleboy/ssh-action@v1.2.0
         with:
-          host: ${{ secrets.SERVER_HOST_PSBA_TICKETING }}
-          username: ${{ secrets.SERVER_USER_PSBA_TICKETING }}
-          password: ${{ secrets.SERVER_PASSWORD_PSBA_TICKETING }}
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          password: ${{ secrets.SERVER_PASSWORD }}
           port: 22
           script: |
-            powershell -NoProfile -ExecutionPolicy Bypass -File "C:\github\ticketing-system\deploy_scripts\deploy.ps1" -env ${{ steps.env.outputs.env }}
+            powershell -NoProfile -ExecutionPolicy Bypass -File "C:\github\ticketing-system\deploy_scripts\deploy.ps1" -env $ENV
