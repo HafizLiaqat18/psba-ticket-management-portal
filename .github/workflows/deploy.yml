@@ -38,7 +38,8 @@ jobs:
           rm: true
           overwrite: true
           debug: true
-          tar: false   # <-- IMPORTANT: disables tar, avoids empty archive
+          timeout: 300
+          command_timeout: 300
 
       - name: Upload frontend folder
         uses: appleboy/scp-action@v0.1.7
@@ -52,7 +53,8 @@ jobs:
           rm: true
           overwrite: true
           debug: true
-          tar: false   # <-- disables tar
+          timeout: 300
+          command_timeout: 300
 
       - name: Run remote PowerShell deploy script
         uses: appleboy/ssh-action@v1.2.0
@@ -62,4 +64,4 @@ jobs:
           password: ${{ secrets.SERVER_PASSWORD }}
           port: 22
           script: |
-            powershell -NoProfile -ExecutionPolicy Bypass -File "C:\github\ticketing-system\deploy_scripts\deploy.ps1" -env ${{ steps.env.outputs.env }}
+            powershell -NoProfile -ExecutionPolicy Bypass -File "C:/github/ticketing-system/deploy_scripts/deploy.ps1" -env ${{ steps.env.outputs.env }}
