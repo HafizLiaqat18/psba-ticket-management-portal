@@ -1,4 +1,4 @@
-name: CI/CD Deploy to Windows
+name: PSBA CI / CD
 
 on:
   push:
