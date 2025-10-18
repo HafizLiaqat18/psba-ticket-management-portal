@@ -32,7 +32,7 @@ jobs:
 
       # 3️⃣ Clean remote folders safely using PowerShell (Windows)
       - name: Clean remote backend and frontend folders
-        uses: appleboy/ssh-action@v0.1.7
+        uses: appleboy/ssh-action@v1.6.0
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
@@ -63,7 +63,7 @@ jobs:
 
       # 4️⃣ Upload Backend files (overwrite, no remove)
       - name: Upload Backend via SCP
-        uses: appleboy/scp-action@v0.1.7
+        uses: appleboy/scp-action@v1.6.0
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
@@ -78,7 +78,7 @@ jobs:
 
       # 5️⃣ Upload Frontend files (overwrite, no remove)
       - name: Upload Frontend via SCP
-        uses: appleboy/scp-action@v0.1.7
+        uses: appleboy/scp-action@v1.6.0
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
@@ -93,7 +93,7 @@ jobs:
 
       # 6️⃣ Rebuild and restart backend with PM2
       - name: Restart Backend via PM2
-        uses: appleboy/ssh-action@v0.1.7
+        uses: appleboy/ssh-action@v1.6.0
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
