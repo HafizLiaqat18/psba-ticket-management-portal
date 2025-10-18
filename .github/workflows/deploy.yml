@@ -1,4 +1,4 @@
-name: CI/CD Deploy to Windows Server
+name: CI/CD Deploy to Windows
 
 on:
   push:
