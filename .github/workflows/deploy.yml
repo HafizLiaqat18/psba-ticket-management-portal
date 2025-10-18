@@ -36,7 +36,8 @@ jobs:
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
-          password: ${{ secrets.SERVER_PASS }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          known_hosts: ${{ secrets.SSH_KNOWN_HOSTS }}
           port: 22
           script: |
             powershell -Command "
@@ -46,27 +47,28 @@ jobs:
               Write-Host 'Cleaning remote folders at:' $basePath
 
               if (Test-Path \"$basePath\Ticketing-Management-System-Backend-\") {
-                Remove-Item -Recurse -Force \"$basePath\Ticketing-Management-System-Backend-\"
+                Remove-Item -Recurse -Force \"$basePath\Ticketing-Management-System-Backend-\" 
                 Write-Host 'Backend folder removed.'
               } else {
                 Write-Host 'Backend folder not found.'
               }
 
               if (Test-Path \"$basePath\Ticketing-Management-System-Frontend\") {
-                Remove-Item -Recurse -Force \"$basePath\Ticketing-Management-System-Frontend\"
+                Remove-Item -Recurse -Force \"$basePath\Ticketing-Management-System-Frontend\" 
                 Write-Host 'Frontend folder removed.'
               } else {
                 Write-Host 'Frontend folder not found.'
               }
             "
 
-      # 4️⃣ Upload Backend files (no remove, overwrite instead)
+      # 4️⃣ Upload Backend files (overwrite, no remove)
       - name: Upload Backend via SCP
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
-          password: ${{ secrets.SERVER_PASS }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          known_hosts: ${{ secrets.SSH_KNOWN_HOSTS }}
           port: 22
           source: "Ticketing-Management-System-Backend-/**"
           target: "C:/github/ticketing-system/${{ steps.set-env.outputs.env }}/psba-ticket-management-portal/Ticketing-Management-System-Backend-"
@@ -74,13 +76,14 @@ jobs:
           rm: false
           debug: true
 
-      # 5️⃣ Upload Frontend files (no remove, overwrite instead)
+      # 5️⃣ Upload Frontend files (overwrite, no remove)
       - name: Upload Frontend via SCP
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
-          password: ${{ secrets.SERVER_PASS }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          known_hosts: ${{ secrets.SSH_KNOWN_HOSTS }}
           port: 22
           source: "Ticketing-Management-System-Frontend/**"
           target: "C:/github/ticketing-system/${{ steps.set-env.outputs.env }}/psba-ticket-management-portal/Ticketing-Management-System-Frontend"
@@ -94,7 +97,8 @@ jobs:
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
-          password: ${{ secrets.SERVER_PASS }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          known_hosts: ${{ secrets.SSH_KNOWN_HOSTS }}
           port: 22
           script: |
             powershell -Command "
