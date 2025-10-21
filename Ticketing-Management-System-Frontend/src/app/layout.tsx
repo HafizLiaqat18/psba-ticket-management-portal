@@ -7,6 +7,7 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import AppSidebar from "@/components/sidebar";
 import { AppHeader } from "@/components/header";
 import { TicketProvider } from "@/context/ticket-context";
+import { Suspense } from "react";
 
 // const spaceMono = Space_Mono({
 //   subsets: ["latin"],
@@ -44,10 +45,16 @@ export default function RootLayout({
         <AuthProvider>
           <TicketProvider>
             <SidebarProvider>
-              <AppSidebar />
+              <Suspense fallback={null}>
+                <AppSidebar />
+              </Suspense>
               <SidebarInset>
-                <AppHeader />
-                <main className="flex flex-1 flex-col">{children}</main>
+                <Suspense fallback={null}>
+                  <AppHeader />
+                </Suspense>
+                <Suspense fallback={null}>
+                  <main className="flex flex-1 flex-col">{children}</main>
+                </Suspense>
               </SidebarInset>
             </SidebarProvider>
           </TicketProvider>

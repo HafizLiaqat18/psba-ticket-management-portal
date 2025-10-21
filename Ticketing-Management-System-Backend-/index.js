@@ -1,3 +1,7 @@
+import dotenv from "dotenv";
+dotenv.config({ path: "./config.env" }); // 👈 this loads your env variables
+
+
 import express from "express";
 import mongoose from "mongoose";
 import morgan from "morgan";
@@ -9,8 +13,10 @@ import imageRouter from "./routes/imageRouter.js";
 import reportRouter from "./routes/reportRouter.js";
 import cors from "cors";
 
+
 import { globalError } from "./controller/errorController.js";
 
+console.log("helo")
 import { createWeeklyReport } from "./controller/reportController.js";
 import {
   seedMarketsAndUsers,
