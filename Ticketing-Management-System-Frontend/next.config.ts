@@ -4,12 +4,16 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
       {
+        protocol: "https",
+        hostname: "psba.gop.pk",
+      },
+      {
         protocol: "http",
-        hostname: "*",
+        hostname: "localhost",
       },
       {
         protocol: "https",
-        hostname: "*",
+        hostname: "**",
       },
     ],
   },

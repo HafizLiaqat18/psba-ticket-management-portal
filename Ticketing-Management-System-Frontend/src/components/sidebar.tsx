@@ -145,9 +145,7 @@ export default function AppSidebar() {
               <Link href="/" className="font-semibold">
                 <div className="flex aspect-square size-10 items-center justify-center rounded-lg text-sidebar-primary-foreground">
                   <Image
-                    src={
-                      "https://psba.gop.pk/wp-content/uploads/2025/03/cropped-SAHULAT-BAZAAR-LOGO.png"
-                    }
+                    src="/logo.png"
                     alt="Company Logo"
                     width={60}
                     height={60}
