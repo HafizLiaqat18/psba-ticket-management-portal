@@ -133,6 +133,14 @@ const getWeeklyReport = catchAsync(async (req, res, next) => {
     return next(new AppError("No report found with that ID", 404));
   }
 
+  console.log("Weekly Report found:", report._id);
+  console.log("Markets Report count:", report.marketsReport?.length);
+  if (report.marketsReport && report.marketsReport.length > 0) {
+    console.log("First market report:", report.marketsReport[0]);
+    console.log("Market ID type:", typeof report.marketsReport[0].marketId);
+    console.log("Market ID value:", report.marketsReport[0].marketId);
+  }
+
   res.status(200).json({
     status: "success",
     data: {
@@ -221,6 +229,15 @@ const getWeeklyReportByDate = catchAsync(async (req, res, next) => {
 
   if (!report) {
     return next(new AppError("No report found for this date", 404));
+  }
+
+  console.log("Weekly Reports by date found:", report.length);
+  if (report.length > 0) {
+    console.log("First report markets count:", report[0].marketsReport?.length);
+    if (report[0].marketsReport && report[0].marketsReport.length > 0) {
+      console.log("First market report:", report[0].marketsReport[0]);
+      console.log("Market ID type:", typeof report[0].marketsReport[0].marketId);
+    }
   }
 
   res.status(200).json({

@@ -115,6 +115,11 @@ export default function AppSidebar() {
 
   // Helper function to check if user can access a route
   const canAccessRoute = (item: (typeof navItems)[0]) => {
+    // Superadmins can access everything
+    if (user?.role === "superadmin") {
+      return true;
+    }
+
     // Check superadmin access first
     if (item.superAdminOnly && user?.role !== "superadmin") {
       return false;

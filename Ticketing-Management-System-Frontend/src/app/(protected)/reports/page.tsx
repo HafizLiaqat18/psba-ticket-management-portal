@@ -23,6 +23,11 @@ export default function Page() {
       setLoading(true);
       const { data } = await api("/report/get-weekly-report");
       console.log("Weekly Report Data:", data);
+      console.log("Markets Report:", data.data.report.marketsReport);
+      if (data.data.report.marketsReport && data.data.report.marketsReport.length > 0) {
+        console.log("First market report:", data.data.report.marketsReport[0]);
+        console.log("Market ID:", data.data.report.marketsReport[0].marketId);
+      }
       setReportData(data.data.report);
     } catch (error) {
       console.error("Error fetching weekly report:", error);

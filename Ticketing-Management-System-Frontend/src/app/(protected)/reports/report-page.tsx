@@ -77,6 +77,7 @@ export default function SecurityReportsPage({
   };
 
   const allMarkets = reportData?.marketsReport || [];
+  console.log(allMarkets)
   const submittedMarkets = allMarkets.filter((market) => market.isSubmitted);
   const notSubmittedMarkets = allMarkets.filter((market) => !market.isSubmitted);
 
@@ -157,7 +158,7 @@ export default function SecurityReportsPage({
               <TableRow key={market._id}>
                 <TableCell>{startIndex + idx + 1}</TableCell>
                 <TableCell className="font-medium">
-                  {market.marketId?.name ?? "Unknown"}
+                  {market.marketId?.name || "Unknown"}
                 </TableCell>
                 <TableCell>{formatDate(market.createdAt)}</TableCell>
                 <TableCell>

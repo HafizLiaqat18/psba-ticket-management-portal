@@ -51,12 +51,38 @@ export function CreateTicketDialog() {
     }
   }, [user?.assignedToType]);
 
+  const MAX_FILES = 5;
+  const MAX_FILE_SIZE_BYTES = 3 * 1024 * 1024; // 3 MB
+  const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
-    if (files) {
-      const newFiles = Array.from(files).slice(0, 2 - images.length);
-      setImages((prevImages) => [...prevImages, ...newFiles]);
+    if (!files) return;
+
+    const picked = Array.from(files);
+
+    // Validate type and size
+    const invalidType = picked.find((f) => !ALLOWED_TYPES.includes(f.type));
+    if (invalidType) {
+      toast.error("Only image files (jpg, png, webp, gif) are allowed.");
+      return;
     }
+
+    const tooLarge = picked.find((f) => f.size > MAX_FILE_SIZE_BYTES);
+    if (tooLarge) {
+      toast.error("Each image must be 3 MB or smaller.");
+      return;
+    }
+
+    // Enforce max count
+    const room = Math.max(0, MAX_FILES - images.length);
+    if (room <= 0) {
+      toast.error(`You can upload up to ${MAX_FILES} images.`);
+      return;
+    }
+
+    const toAdd = picked.slice(0, room);
+    setImages((prevImages) => [...prevImages, ...toAdd]);
   };
 
   useEffect(() => {
@@ -257,26 +283,39 @@ export function CreateTicketDialog() {
                 onDrop={(e) => {
                   e.preventDefault();
                   if (isSubmitting) return;
-                  const dropped = Array.from(e.dataTransfer.files).filter((f) => f.type.startsWith("image/"));
-                  if (!dropped.length) return;
-                  const room = Math.max(0, 2 - images.length);
+                  const droppedAll = Array.from(e.dataTransfer.files);
+                  const dropped = droppedAll.filter((f) => ALLOWED_TYPES.includes(f.type));
+                  if (dropped.length !== droppedAll.length) {
+                    toast.error("Only image files (jpg, png, webp, gif) are allowed.");
+                    return;
+                  }
+                  const tooLarge = dropped.find((f) => f.size > MAX_FILE_SIZE_BYTES);
+                  if (tooLarge) {
+                    toast.error("Each image must be 3 MB or smaller.");
+                    return;
+                  }
+                  const room = Math.max(0, MAX_FILES - images.length);
+                  if (room <= 0) {
+                    toast.error(`You can upload up to ${MAX_FILES} images.`);
+                    return;
+                  }
                   setImages((prev) => [...prev, ...dropped.slice(0, room)]);
                 }}
               >
                 <div className="flex flex-col items-center text-gray-500 dark:text-gray-400">
                   <ImagePlusIcon className="h-5 w-5 mb-0.5" />
                   <span className="text-xs font-medium">
-                    Drag & drop or click — up to 2 images
+                    Drag & drop or click — up to 5 images (3MB max each)
                   </span>
                 </div>
                 <Input
                   id="images"
                   type="file"
                   multiple
-                  accept="image/*"
+                  accept="image/jpeg,image/png,image/webp,image/gif"
                   onChange={handleFileChange}
                   className="sr-only"
-                  disabled={images.length >= 2 || isSubmitting}
+                  disabled={images.length >= MAX_FILES || isSubmitting}
                 />
               </label>
               {images.length > 0 && (

@@ -78,9 +78,18 @@ export function CreateUserDialog({
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
-    if (!name || !email || !password || !assignedToType || !assignedTo) {
-      toast.error("Please fill in all fields.");
-      return;
+    // For edit mode, only validate name and password
+    if (mode === "edit") {
+      if (!name || !password) {
+        toast.error("Please fill in all required fields.");
+        return;
+      }
+    } else {
+      // For create mode, validate all fields
+      if (!name || !email || !password || !assignedToType || !assignedTo) {
+        toast.error("Please fill in all fields.");
+        return;
+      }
     }
 
     try {

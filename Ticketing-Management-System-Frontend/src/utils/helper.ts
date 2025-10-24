@@ -68,7 +68,7 @@ const generateExcelReport = (reportData: WeeklyReport) => {
   const dataStartRow = 6;
   reportData.marketsReport.forEach((report, index) => {
     const rowData = [
-  (report.marketId?.name ?? ""),
+      report.marketId?.name || "Unknown",
       report.totalCCTV || 0,
       report.faultyCCTV || 0,
       report.walkthroughGates || 0,

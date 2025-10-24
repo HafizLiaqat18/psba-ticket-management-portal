@@ -20,7 +20,7 @@ const router = express.Router();
 // Apply authentication to all routes
 router.use(protectedRoute);
 
-router.route("/create-ticket").post(upload.array("images", 2), createTicket);
+router.route("/create-ticket").post(upload.array("images", 5), createTicket);
 
 router.route("/getusertickets").get(getUsertickets);
 
